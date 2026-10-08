@@ -102,17 +102,45 @@ body {
 
 .intro {
   width: fit-content;
-  max-width: 31rem;
+  max-width: 44rem;
   pointer-events: auto;
+}
+
+/* One quiet line of study details under the tagline. */
+.studies {
+  margin: 0.55rem 0 0;
+  color: var(--ink-faint);
+  font-size: clamp(0.55rem, 0.62vw, 0.62rem);
+  text-align: center;
+  padding-left: 0.2em; /* balances the trailing letter-spacing */
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-wrap: balance;
 }
 
 .name {
   margin: 0;
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(3.4rem, 7.4vw, 7.25rem);
+  font-size: clamp(3.8rem, 9vw, 9rem);
   line-height: 0.92;
   letter-spacing: -0.015em;
+}
+
+.tagline {
+  margin: 1.1rem 0 0;
+  color: var(--ink-soft);
+  font-size: clamp(0.78rem, 0.85vw, 0.88rem);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+.tagline .sep {
+  margin: 0 0.55em;
+  color: var(--ink-faint);
+  font-weight: 300;
 }
 
 .lede {
@@ -125,17 +153,19 @@ body {
 
 .links {
   display: flex;
-  gap: 2rem;
-  margin-top: 2.75rem;
+  justify-content: center;
+  gap: 2.25rem;
+  margin-top: 2.25rem;
 }
 
 .links a {
   position: relative;
   padding-block: 0.4rem;
-  color: var(--ink-faint);
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: 0.18em;
+  color: rgba(238, 241, 246, 0.85);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  margin-right: -0.16em;
   text-transform: uppercase;
   text-decoration: none;
   transition: color 0.4s ease;
@@ -174,11 +204,16 @@ body {
   animation: rise 1.6s var(--ease-out) forwards;
 }
 
+.studies {
+  animation-delay: 0.75s;
+}
+
 .name {
   animation-delay: 0.35s;
 }
 
-.lede {
+.lede,
+.tagline {
   animation-delay: 0.6s;
 }
 
@@ -219,6 +254,7 @@ body {
 @media (max-width: 899px) and (orientation: portrait) {
   .hero {
     align-items: flex-end;
+    justify-content: center;
     padding: var(--gutter);
     padding-bottom: max(3.25rem, calc(env(safe-area-inset-bottom) + 2.25rem), 8svh);
   }
@@ -232,8 +268,15 @@ body {
     pointer-events: none;
   }
 
+  .studies {
+    margin-top: 0.5rem;
+    font-size: 0.55rem;
+    letter-spacing: 0.14em;
+    padding-left: 0.14em;
+  }
+
   .name {
-    font-size: clamp(3rem, 15vw, 4.75rem);
+    font-size: clamp(3.4rem, 17vw, 5.4rem);
   }
 
   .lede {
@@ -360,8 +403,7 @@ body {
 }
 
 #close-contact,
-#place-back,
-.cosmos-toolbar button {
+#place-back {
   padding: 0.7rem 1.1rem;
   border: 1px solid rgba(129, 150, 176, 0.3);
   border-radius: 999px;
@@ -375,8 +417,7 @@ body {
 }
 
 #close-contact:hover,
-#place-back:hover,
-.cosmos-toolbar button:hover {
+#place-back:hover {
   border-color: #a7cfff;
 }
 
@@ -534,10 +575,11 @@ body.contact-struck #pins {
 .pin-place,
 .pin-cta {
   display: block;
+  max-width: 0;
   max-height: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-height 0.35s var(--ease-out), opacity 0.3s ease, margin 0.35s ease;
+  transition: max-width 0.35s var(--ease-out), max-height 0.35s var(--ease-out), opacity 0.3s ease, margin 0.35s ease;
 }
 
 .pin-place {
@@ -556,6 +598,7 @@ body.contact-struck #pins {
 .pin-label.is-focused .pin-cta,
 .pin-label:focus-visible .pin-place,
 .pin-label:focus-visible .pin-cta {
+  max-width: 18rem;
   max-height: 1.4rem;
   opacity: 1;
   margin-top: 0.3rem;
@@ -742,312 +785,543 @@ body.place-open {
   }
 }
 
-/* ---------- The Work universe ---------- */
+/* ---------- Work: a formal page with a hint of space ---------- */
 
-#universe {
+#work-page {
+  --paper-ink: #ece8e1;
+  --paper-soft: #b9b6b0;
+  --paper-rule: rgba(236, 232, 225, 0.14);
+  --paper-link: #c9d6ee;
   position: fixed;
   inset: 0;
   z-index: 6;
-  background: #010104;
+  background: #07080c;
+  color: var(--paper-ink);
+  font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  font-optical-sizing: auto;
   opacity: 0;
-  transition: opacity 0.8s ease;
+  transition: opacity 0.6s ease;
 }
 
-#universe[hidden] {
+#work-page[hidden] {
   display: none;
 }
 
-#universe.is-revealed {
+#work-page.is-revealed {
   opacity: 1;
 }
 
-#universe.is-leaving {
+#work-page.is-leaving {
   opacity: 0;
-  transition: opacity 0.9s ease 0.35s;
 }
 
-#universe-canvas {
+/* The only nod to space: a faint curve of Earth's horizon and a few stars. */
+#work-page::before {
+  content: "";
+  position: absolute;
+  top: -86vw;
+  left: 50%;
+  width: 200vw;
+  height: 88vw;
+  border-radius: 50%;
+  box-shadow: 0 1px 0 rgba(170, 195, 235, 0.22), 0 14px 70px rgba(90, 130, 200, 0.12);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.work-stars {
   position: absolute;
   inset: 0;
-  display: block;
   width: 100%;
   height: 100%;
-  touch-action: none;
+  pointer-events: none;
 }
 
-.cosmos-toolbar {
+.work-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.work-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: max(1.25rem, env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) 1rem max(var(--gutter), env(safe-area-inset-left));
+  background: #07080c;
+  border-bottom: 1px solid var(--paper-rule);
+}
+
+.work-mark {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.work-home {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--paper-link);
+  font: inherit;
+  font-size: 0.95rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+.work-body {
+  position: relative;
+  width: min(44rem, 100% - 2 * var(--gutter));
+  margin: 0 auto;
+  padding: clamp(3rem, 9vh, 5.5rem) 0 0;
+}
+
+.work-title {
+  margin: 0;
+  font-size: clamp(2.6rem, 6vw, 3.6rem);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.work-title:focus {
+  outline: none;
+}
+
+.work-contents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
+  margin: 1rem 0 0;
+  font-size: 1.05rem;
+}
+
+#work-page a {
+  color: var(--paper-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+#work-page a:hover,
+.work-home:hover {
+  color: var(--paper-ink);
+}
+
+#work-page a:focus-visible,
+#work-page button:focus-visible {
+  outline: 2px solid var(--paper-link);
+  outline-offset: 3px;
+}
+
+.work-section {
+  margin-top: clamp(3rem, 8vh, 4.5rem);
+  scroll-margin-top: 5rem;
+}
+
+.work-heading {
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--paper-rule);
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+
+.work-heading-minor {
+  margin-top: 2.75rem;
+  font-size: 1.15rem;
+}
+
+.work-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.work-entry {
+  padding: 1.35rem 0;
+}
+
+.work-entry + .work-entry {
+  border-top: 1px solid rgba(236, 232, 225, 0.06);
+}
+
+.work-entry-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
+}
+
+.work-entry-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.work-entry-sub {
+  margin: 0.15rem 0 0;
+  color: var(--paper-soft);
+  font-style: italic;
+}
+
+.work-entry-dates {
+  flex: none;
+  margin: 0;
+  color: var(--paper-soft);
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.work-points {
+  margin: 0.7rem 0 0;
+  padding-left: 1.15rem;
+  color: var(--paper-ink);
+  line-height: 1.6;
+}
+
+.work-points li + li {
+  margin-top: 0.35rem;
+}
+
+.work-points strong {
+  font-weight: 600;
+}
+
+.work-entry-text {
+  margin: 0.45rem 0 0;
+  line-height: 1.6;
+}
+
+.work-entry-link,
+.work-entry-note {
+  display: inline-block;
+  margin: 0.45rem 0 0;
+  font-size: 0.95rem;
+}
+
+.work-entry-note {
+  color: var(--paper-soft);
+  font-style: italic;
+}
+
+.work-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.6rem;
+  margin-top: clamp(3rem, 8vh, 4.5rem);
+  padding: 1.5rem 0 max(3rem, calc(env(safe-area-inset-bottom) + 2rem));
+  border-top: 1px solid var(--paper-rule);
+}
+
+body.work-open {
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .work-entry-head {
+    flex-direction: column;
+  }
+
+  .work-entry-dates {
+    order: -1;
+    font-size: 0.85rem;
+  }
+
+  .work-bar {
+    padding: max(1rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right)) 0.85rem max(1.25rem, env(safe-area-inset-left));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #work-page {
+    transition-duration: 0.01s;
+  }
+}
+
+/* ---------- About: the telescope and the star tunnel ---------- */
+
+/* The eyepiece is drawn on this canvas during the transition. */
+#scope {
+  position: fixed;
+  inset: 0;
+  z-index: 7;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#scope[hidden] {
+  display: none;
+}
+
+#sky {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  background: #02030a;
+  color: var(--ink);
+  font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#sky[hidden] {
+  display: none;
+}
+
+.sky-canvas,
+.sky-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.sky-art {
+  overflow: visible;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.sky-ground {
+  fill: #030408;
+  stroke: rgba(140, 160, 210, 0.14);
+  stroke-width: 1;
+}
+
+.sky-telescope {
+  fill: #05070d;
+  stroke: rgba(160, 180, 225, 0.42);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.sky-labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* A constellation's name, shown only while it's lit. */
+.sky-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.2rem 0.4rem;
+  border: 0;
+  background: none;
+  color: rgba(236, 232, 225, 0.9);
+  font: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.sky-label:focus-visible {
+  outline: 1px solid rgba(201, 214, 238, 0.6);
+  outline-offset: 2px;
+}
+
+.sky-bar {
   position: absolute;
   top: 0;
   right: 0;
   left: 0;
-  z-index: 3;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 1rem;
   padding: max(1.5rem, env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) 1rem max(var(--gutter), env(safe-area-inset-left));
   pointer-events: none;
 }
 
-.cosmos-toolbar button {
-  pointer-events: auto;
+.sky-title {
+  margin: 0;
+  font-size: clamp(1.9rem, 3vw, 2.4rem);
+  font-weight: 400;
+  line-height: 1;
 }
 
-#cosmos-home {
-  margin-left: auto;
-}
-
-#cosmos-up[hidden] {
-  display: none;
-}
-
-.cosmos-toolbar button:focus-visible,
-.cosmos-panel button:focus-visible,
-.galaxy-label:focus-visible,
-.planet-label:focus-visible {
-  outline: 2px solid var(--accent, #9fcaff);
-  outline-offset: 4px;
-}
-
-.cosmos-labels {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.galaxy-label {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: grid;
-  justify-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.9rem;
+.sky-home {
+  padding: 0;
   border: 0;
   background: none;
-  color: var(--ink);
+  color: #c9d6ee;
   font: inherit;
-  text-align: center;
+  font-size: 0.95rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
   cursor: pointer;
   pointer-events: auto;
-  transition: opacity 0.5s ease;
-  will-change: transform;
 }
 
-.galaxy-name {
-  font-family: var(--serif);
-  font-size: clamp(2rem, 3.6vw, 3rem);
-  line-height: 1;
-  letter-spacing: 0.01em;
-  text-shadow: 0 0 28px var(--accent), 0 0 2px rgba(0, 0, 0, 0.6);
-}
-
-.galaxy-blurb {
-  color: var(--ink-soft);
-  font-size: 0.8rem;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
-
-.galaxy-label.is-hover .galaxy-blurb,
-.galaxy-label:focus-visible .galaxy-blurb {
-  opacity: 1;
-  transform: none;
-}
-
-.planet-label {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 0.32rem 0.7rem;
-  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
-  border-radius: 999px;
-  background: rgba(6, 8, 18, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+.sky-home:hover {
   color: var(--ink);
-  font: inherit;
-  font-size: 0.78rem;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  cursor: pointer;
-  pointer-events: auto;
-  transition: opacity 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-  will-change: transform;
 }
 
-.planet-label.is-hover,
-.planet-label.is-selected {
-  border-color: var(--accent);
-  box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 45%, transparent);
+.sky-home:focus-visible {
+  outline: 2px solid #c9d6ee;
+  outline-offset: 3px;
 }
 
-.galaxy-label.is-hidden,
-.planet-label.is-hidden {
-  opacity: 0;
-  pointer-events: none;
+body.sky-open {
+  overflow: hidden;
 }
 
-.cosmos-hint {
+/* The photo wheel that opens from a constellation. */
+.sky-reel {
   position: absolute;
-  bottom: max(1.75rem, calc(env(safe-area-inset-bottom) + 1rem));
   left: 50%;
-  z-index: 1;
-  margin: 0;
-  color: var(--ink-faint);
-  font-size: 0.68rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.cosmos-panel {
-  position: absolute;
-  top: 50%;
-  right: max(var(--gutter), env(safe-area-inset-right));
-  z-index: 2;
-  width: min(26rem, calc(100vw - 2rem));
-  max-height: min(78vh, 46rem);
-  overflow: auto;
-  padding: 1.45rem 1.5rem 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
-  background: rgba(8, 10, 20, 0.62);
-  backdrop-filter: blur(18px) saturate(1.2);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  bottom: max(4.5rem, calc(env(safe-area-inset-bottom) + 3.75rem));
+  width: min(36rem, calc(100vw - 2rem));
+  padding: 0.9rem 1rem 0.8rem;
+  border: 1px solid rgba(236, 232, 225, 0.12);
+  border-radius: 10px;
+  background: rgba(4, 6, 14, 0.82);
+  color: var(--ink);
+  transform: translate(-50%, 12px);
   opacity: 0;
-  transform: translate(16px, -50%);
-  transition: opacity 0.45s var(--ease-out), transform 0.45s var(--ease-out);
+  transition: opacity 0.35s ease, transform 0.35s var(--ease-out);
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.cosmos-panel.is-open {
-  opacity: 1;
-  transform: translate(0, -50%);
-}
-
-.cosmos-panel[hidden] {
+.sky-reel[hidden] {
   display: none;
 }
 
-.cosmos-panel-close {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.8rem;
-  width: 2rem;
-  height: 2rem;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  color: var(--ink);
+.sky-reel.is-open {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.sky-reel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sky-reel-title {
   font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
 }
 
-.cosmos-panel-kicker {
-  margin: 0;
-  color: var(--accent);
-  font-size: 0.62rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.cosmos-panel-title {
-  margin: 0.5rem 0 0;
-  font-family: var(--serif);
-  font-size: clamp(2rem, 3.4vw, 2.6rem);
-  font-weight: 400;
-  line-height: 1;
-}
-
-.cosmos-panel-body {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1.1rem;
-}
-
-.cosmos-item {
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.cosmos-item h3 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 400;
-}
-
-.cosmos-item .meta {
-  margin: 0.3rem 0 0;
-  color: var(--ink-faint);
-  font-size: 0.72rem;
-  letter-spacing: 0.03em;
-}
-
-.cosmos-item .text {
-  margin: 0.55rem 0 0;
-  color: var(--ink-soft);
-  font-size: 0.86rem;
-  line-height: 1.6;
-}
-
-.cosmos-item button {
-  margin-top: 0.75rem;
-  padding: 0.55rem 0.95rem;
-  border: 1px solid var(--accent);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--ink);
+.sky-reel button {
+  padding: 0.2rem 0.35rem;
+  border: 0;
+  background: none;
+  color: #c9d6ee;
   font: inherit;
-  font-size: 0.74rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.3s ease;
 }
 
-.cosmos-item button:hover {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
+.sky-reel button:hover {
+  color: var(--ink);
 }
 
-body.universe-open {
+.sky-reel button:focus-visible {
+  outline: 1px solid #c9d6ee;
+  outline-offset: 2px;
+}
+
+.sky-reel-stage {
+  height: 150px;
+  margin-top: 0.5rem;
+  perspective: 900px;
   overflow: hidden;
+  cursor: grab;
+}
+
+.sky-reel-stage:active {
+  cursor: grabbing;
+}
+
+.sky-reel-ring {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s var(--ease-out);
+}
+
+.sky-reel-ring.is-dragging {
+  transition: none;
+}
+
+.sky-reel-photo {
+  position: absolute;
+  top: calc(50% - 62px);
+  left: calc(50% - 84px);
+  width: 168px;
+  height: 124px;
+  overflow: hidden;
+  border: 1px solid rgba(236, 232, 225, 0.16);
+  border-radius: 4px;
+  background: #0b0e18;
+  backface-visibility: hidden;
+  opacity: 0.45;
+  transition: opacity 0.4s ease;
+}
+
+.sky-reel-photo.is-front {
+  opacity: 1;
+}
+
+.sky-reel-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.sky-reel-photo.is-empty {
+  display: grid;
+  place-items: center;
+  padding: 0.75rem;
+  background: hsl(var(--hue) 22% 13%);
+  color: rgba(236, 232, 225, 0.6);
+  font-size: 0.8rem;
+  font-style: italic;
+  text-align: center;
+}
+
+.sky-reel-nav {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 0.35rem;
 }
 
 @media (max-width: 600px) {
-  .cosmos-panel {
-    top: auto;
-    right: 0.75rem;
-    bottom: max(0.75rem, env(safe-area-inset-bottom));
-    left: 0.75rem;
-    width: auto;
-    max-height: 58vh;
-    transform: translateY(16px);
+  .sky-reel-stage {
+    height: 118px;
   }
 
-  .cosmos-panel.is-open {
-    transform: none;
-  }
-
-  .cosmos-toolbar {
-    padding: max(1rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right)) 1rem max(1.25rem, env(safe-area-inset-left));
-  }
-
-  .galaxy-blurb {
-    opacity: 1;
-    transform: none;
+  .sky-reel-photo {
+    top: calc(50% - 48px);
+    left: calc(50% - 64px);
+    width: 128px;
+    height: 96px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #universe,
-  .cosmos-panel,
-  .galaxy-label,
-  .planet-label {
+  .sky-reel,
+  .sky-reel-ring {
     transition-duration: 0.01s;
   }
 }

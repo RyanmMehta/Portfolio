@@ -14,6 +14,7 @@ export const PROJECTS = [
     lat: 35.15,
     lon: 128.66,
     theme: 'blossom',
+    tags: ['Three.js', 'Journaling', 'Offline-first'],
     accent: '#ffb7cb',
     motto: 'Plant / Remember / Revisit',
     blurb:
@@ -29,6 +30,7 @@ export const PROJECTS = [
     lat: 47.8,
     lon: -123.6,
     theme: 'forest',
+    tags: ['Behavior design', 'Local-first', 'Analytics'],
     accent: '#9fe0a8',
     motto: 'Consistency > perfection',
     blurb:
@@ -45,6 +47,7 @@ export const PROJECTS = [
     lat: 40.73,
     lon: -73.99,
     theme: 'city',
+    tags: ['Product operations', 'Next.js', 'Human approval'],
     accent: '#8fb8ff',
     motto: 'Track / Review / Follow up',
     blurb:
@@ -60,6 +63,7 @@ export const PROJECTS = [
     lat: -22.95,
     lon: -43.2,
     theme: 'stage',
+    tags: ['Audio analysis', 'On-device', 'Working MVP'],
     accent: '#d59bff',
     motto: 'Capture / Analyze / Arrange / Mix',
     blurb:
@@ -75,6 +79,7 @@ export const PROJECTS = [
     lat: 43.35,
     lon: 11.3,
     theme: 'tuscany',
+    tags: ['Inventory', 'Automation', 'Daily-use product'],
     accent: '#ffd27f',
     motto: 'Buy / Cook / Eat / Sync',
     blurb:
@@ -90,6 +95,7 @@ export const PROJECTS = [
     lat: 19.08,
     lon: 72.88,
     theme: 'lanterns',
+    tags: ['Stealth'],
     accent: '#ff8a66',
     motto: 'Under wraps',
     blurb: 'A new project in stealth. More details to come.',

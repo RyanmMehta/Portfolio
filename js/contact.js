@@ -182,7 +182,7 @@
 
     // Redraw each word of the intro where the browser laid it out.
     const range = document.createRange();
-    for (const el of document.querySelectorAll('.hero .name, .hero .lede, .hero .links a')) {
+    for (const el of document.querySelectorAll('.hero .name, .hero .tagline, .hero .studies, .hero .lede, .hero .links a')) {
       const style = getComputedStyle(el);
       ctx.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
       ctx.fillStyle = style.color;

@@ -176,7 +176,7 @@ if (renderer) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 5000);
 
   // travel (turns a project to face you) > pitch (screen-space tilt) >
   // roll (axial lean) > spin (around the poles)
@@ -254,10 +254,10 @@ if (renderer) {
       cx = (left + right) / 2;
       cy = h / 2;
     } else {
-      // Fill the space above the text, running a little off the right edge.
+      // Fill the space above the text, centred over it.
       const space = Math.max(intro.getBoundingClientRect().top - 16, h * 0.4);
-      r = Math.min(w * 0.58, space * 0.44);
-      cx = w * 0.6;
+      r = Math.min(w * 0.5, space * 0.44);
+      cx = w / 2;
       cy = space / 2 + 4;
     }
     Object.assign(view, { w, h, cx, cy, r });
@@ -340,6 +340,9 @@ if (renderer) {
       updateTravel(now);
     } else if (space.phase !== 'idle') {
       updateSpace(now);
+    } else if (sky.active) {
+      // Pulling back out of the telescope: the globe shrinks in place.
+      camera.position.set(0, 0, view.distance / sky.scale);
     } else {
       const settle = reduceMotion ? 1 : Math.min(t / 3.6, 1);
       const dolly = INTRO_DOLLY * (1 - settle) ** 3;
@@ -351,7 +354,7 @@ if (renderer) {
   function frame(now) {
     step(now);
     // While a project's world is open, the globe sits underneath it unseen.
-    if (travel.phase !== 'inside' && space.phase !== 'away') renderer.render(scene, camera);
+    if (travel.phase !== 'inside' && space.phase !== 'away' && !sky.hidden) renderer.render(scene, camera);
     requestAnimationFrame(frame);
   }
 
@@ -366,7 +369,7 @@ if (renderer) {
   }
 
   canvas.addEventListener('pointerdown', (e) => {
-    if (!ready || travel.active || space.phase !== 'idle' || !overGlobe(e.clientX, e.clientY)) return;
+    if (!ready || travel.active || space.phase !== 'idle' || sky.active || !overGlobe(e.clientX, e.clientY)) return;
     Object.assign(drag, { active: true, id: e.pointerId, x: e.clientX, y: e.clientY, time: e.timeStamp, vx: 0, vy: 0 });
     Object.assign(drag, { startX: e.clientX, startY: e.clientY, startTime: e.timeStamp });
     // Grabbing stops the opening turn on the spot.
@@ -596,7 +599,7 @@ if (renderer) {
   }
 
   async function enter(pin) {
-    if (travel.active || !ready || space.phase !== 'idle') return;
+    if (travel.active || !ready || space.phase !== 'idle' || sky.active) return;
     Object.assign(travel, { active: true, phase: 'preparing', pin, depth: 0, revealed: false });
     dismissHint();
     drag.active = false;
@@ -657,18 +660,18 @@ if (renderer) {
     camera.updateProjectionMatrix();
   }
 
-  /* ---------- Off to the Work universe ---------- */
+  /* ---------- Off to the Work page ---------- */
 
-  // The camera pulls straight back until Earth is a speck, while the
-  // universe fades in around it (starting from that same speck).
-  const SPACE_OUT = 1.7;
-  const SPACE_IN = 1.5;
-  const space = { phase: 'idle', start: 0, universe: null, revealed: false, then: null };
-  let universeModule = null;
-  const loadUniverse = () => (universeModule ??= import('./universe.js'));
+  // The camera pulls straight back until Earth is a speck, and the Work
+  // page fades in over the starfield.
+  const SPACE_OUT = 1.3;
+  const SPACE_IN = 1.3;
+  const space = { phase: 'idle', start: 0, page: null, revealed: false };
+  let workModule = null;
+  const loadWork = () => (workModule ??= import('./work.js'));
 
   async function goToSpace() {
-    if (!ready || travel.active || space.phase !== 'idle') return;
+    if (!ready || travel.active || space.phase !== 'idle' || sky.active) return;
     space.phase = 'preparing';
     dismissHint();
     drag.active = false;
@@ -676,14 +679,10 @@ if (renderer) {
     canvas.classList.remove('is-dragging', 'is-over-pin');
     document.body.classList.add('is-traveling');
     try {
-      const { openUniverse } = await loadUniverse();
-      space.universe = await openUniverse({
-        reduced: reduceMotion,
-        onLeave: () => returnFromSpace(),
-        onVisitProject: (id) => returnFromSpace(id),
-      });
+      const { openWork } = await loadWork();
+      space.page = openWork({ reduced: reduceMotion, onLeave: returnFromSpace });
     } catch (err) {
-      console.warn('Could not open the universe.', err);
+      console.warn('Could not open the Work page.', err);
       space.phase = 'idle';
       document.body.classList.remove('is-traveling');
       return;
@@ -691,9 +690,9 @@ if (renderer) {
     Object.assign(space, { phase: 'leaving', start: performance.now(), revealed: false });
   }
 
-  function returnFromSpace(projectId = null) {
-    Object.assign(space, { phase: 'returning', start: performance.now(), universe: null, then: projectId });
-    if (!projectId) document.body.classList.remove('is-traveling');
+  function returnFromSpace() {
+    Object.assign(space, { phase: 'returning', start: performance.now(), page: null });
+    document.body.classList.remove('is-traveling');
   }
 
   function updateSpace(now) {
@@ -702,9 +701,9 @@ if (renderer) {
     if (space.phase === 'leaving') {
       const p = reduceMotion ? 1 : Math.min(elapsed / SPACE_OUT, 1);
       k = smoother(p);
-      if (!space.revealed && p > 0.35) {
+      if (!space.revealed && p > 0.3) {
         space.revealed = true;
-        space.universe?.reveal();
+        space.page?.reveal();
       }
       if (p >= 1) space.phase = 'away';
     } else if (space.phase === 'away') {
@@ -714,22 +713,56 @@ if (renderer) {
       k = 1 - smoother(p);
       if (p >= 1) {
         space.phase = 'idle';
-        const id = space.then;
-        space.then = null;
         setCentre(0);
         camera.position.set(0, 0, view.distance);
-        // Chose a project from the Projects planet: dive straight into it.
-        const pin = id && pins.find((p) => p.project.id === id);
-        if (pin) {
-          document.body.classList.remove('is-traveling');
-          enter(pin);
-        }
         return;
       }
     }
     setCentre(smoother(Math.min(k * 1.5, 1)));
     camera.position.set(0, 0, view.distance * (1 + 11 * k * k));
   }
+
+  /* ---------- About: out of the telescope, into the night sky ---------- */
+
+  const sky = { active: false, scale: 1, hidden: false };
+  let aboutModule = null;
+  const loadAbout = () => (aboutModule ??= import('./about.js'));
+
+  async function goToSky() {
+    if (!ready || travel.active || space.phase !== 'idle' || sky.active) return;
+    sky.active = true;
+    dismissHint();
+    drag.active = false;
+    motion.intro = false;
+    canvas.classList.remove('is-dragging', 'is-over-pin');
+    document.body.classList.add('is-traveling');
+    try {
+      const { openSky } = await loadAbout();
+      openSky({
+        reduced: reduceMotion,
+        origin: { x: view.cx, y: view.cy, r: view.r },
+        zoom: (scale, blur) => {
+          sky.scale = scale;
+          canvas.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : '';
+        },
+        onHidden: (hidden) => (sky.hidden = hidden),
+        onDone: () => {
+          Object.assign(sky, { active: false, scale: 1, hidden: false });
+          canvas.style.filter = '';
+          document.body.classList.remove('is-traveling');
+        },
+      });
+    } catch (err) {
+      console.warn('Could not open About.', err);
+      sky.active = false;
+      document.body.classList.remove('is-traveling');
+    }
+  }
+
+  document.querySelector('.links a[href="#about"]')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    goToSky();
+  });
 
   document.querySelector('.links a[href="#work"]')?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -778,7 +811,11 @@ if (renderer) {
       setTimeout(() => {
         if (!hintDismissed) hint?.classList.add('is-visible');
       }, 2800);
-      setTimeout(() => loadPlaces().catch(() => {}), 4000);
+      setTimeout(() => {
+        loadPlaces().catch(() => {});
+        loadWork().catch(() => {});
+        loadAbout().catch(() => {});
+      }, 4000);
       loadClouds();
     })
     .catch((err) => console.warn('Globe textures failed to load.', err));
