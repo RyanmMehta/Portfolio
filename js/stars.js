@@ -30,13 +30,16 @@ function build() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const rand = seeded(1907);
-  const count = Math.round((width * height) / DENSITY);
+  // Lay stars over a fixed-height field so the sky doesn't shift when a
+  // phone's address bar changes the viewport height.
+  const fieldHeight = Math.max(height, window.screen?.height || 0, window.screen?.width || 0);
+  const count = Math.round((width * fieldHeight) / DENSITY);
   stars = [];
   for (let i = 0; i < count; i++) {
     const bright = rand() < 0.06;
     stars.push({
       x: rand() * width,
-      y: rand() * height,
+      y: rand() * fieldHeight,
       r: bright ? 0.8 + rand() * 0.5 : 0.3 + rand() * 0.45,
       a: bright ? 0.55 + rand() * 0.35 : 0.1 + rand() * 0.4,
       bright,

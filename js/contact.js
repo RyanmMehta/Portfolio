@@ -76,7 +76,10 @@
     if (location.hash === '#contact') open();
     else if (dialog.open) close();
   });
+  let lastWidth = innerWidth;
   window.addEventListener('resize', () => {
+    if (innerWidth === lastWidth) return;
+    lastWidth = innerWidth;
     if (dialog.open && !dialog.classList.contains('is-built')) settle();
   });
 
@@ -447,6 +450,7 @@
     const impactS = { x: w / 2, y: (iconBox[0].top + iconBox[0].bottom) / 2 || row.top + row.height / 2 };
     const impact = world(impactS.x, impactS.y);
     const scaleK = Math.min(Math.max(Math.min(w, h * 1.6) / 1300, 0.65), 1.2);
+    const density = Math.min(Math.max(Math.sqrt(w * h) / 1100, 0.6), 1);
 
     /* Lights and asteroid */
 
@@ -592,8 +596,9 @@
     const sites = [[impactS.x + rand(-4, 4), impactS.y + rand(-4, 4)]];
     for (const [f, count] of [[0.05, 8], [0.12, 12], [0.22, 16], [0.36, 20], [0.55, 24], [0.8, 26], [1.1, 26]]) {
       const offset = rand(0, Math.PI * 2);
-      for (let k = 0; k < count; k++) {
-        const a = offset + ((k + rand(-0.3, 0.3)) / count) * Math.PI * 2;
+      const n = Math.max(6, Math.round(count * density));
+      for (let k = 0; k < n; k++) {
+        const a = offset + ((k + rand(-0.3, 0.3)) / n) * Math.PI * 2;
         const r = maxR * f * rand(0.85, 1.15);
         sites.push([impactS.x + Math.cos(a) * r, impactS.y + Math.sin(a) * r]);
       }
@@ -823,12 +828,12 @@
       heatLight.intensity = 0;
       for (const s of shards) s.mesh.visible = true;
       cracks.visible = true;
-      for (let i = 0; i < 320; i++) {
+      for (let i = 0; i < 320 * density; i++) {
         const d = randomDir();
         d.z = Math.abs(d.z) * 1.4;
         emit('ember', impact.clone().add(randomDir().multiplyScalar(rand(0, 20))), d.multiplyScalar(rand(300, 1700)), rand(0.5, 1.4), rand(5, 11), rand(1, 3), 2.4, 520);
       }
-      for (let i = 0; i < 160; i++) {
+      for (let i = 0; i < 160 * density; i++) {
         const d = randomDir();
         d.z = Math.abs(d.z);
         emit('glass', impact.clone(), d.multiplyScalar(rand(400, 1400)), rand(0.4, 1.0), rand(3, 6), 1, 2.8, 300, 1.4);
@@ -858,7 +863,7 @@
         core.position.copy(rockPos).addScaledVector(travel, rockR * 0.3);
         core.scale.setScalar(rockR * 2.8);
         core.material.uniforms.uIntensity.value = 0.6 + 0.8 * u;
-        const count = Math.round(dt * 900);
+        const count = Math.round(dt * 900 * density);
         for (let i = 0; i < count; i++) {
           const along = prevRockPos.clone().lerp(rockPos, Math.random());
           const pos = along.add(randomDir().multiplyScalar(rockR * rand(0.2, 0.8)));

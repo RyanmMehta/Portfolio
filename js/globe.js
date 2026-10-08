@@ -238,7 +238,8 @@ if (renderer) {
     const w = window.innerWidth;
     const h = window.innerHeight;
     let r, cx, cy;
-    if (w >= WIDE_LAYOUT) {
+    // Side by side on desktops and on phones held sideways; stacked in portrait.
+    if (w >= WIDE_LAYOUT || w > h) {
       // Keep the globe and most of its glow clear of the text. When space is
       // tight it may run up to 15% of its radius off the right edge.
       const textRight = intro.getBoundingClientRect().right + 32;
@@ -248,9 +249,11 @@ if (renderer) {
       cx = (left + right) / 2;
       cy = h / 2;
     } else {
-      r = Math.min(w * 0.45, h * 0.25);
-      cx = w / 2;
-      cy = h * 0.3;
+      // Fill the space above the text, running a little off the right edge.
+      const space = Math.max(intro.getBoundingClientRect().top - 16, h * 0.4);
+      r = Math.min(w * 0.58, space * 0.44);
+      cx = w * 0.6;
+      cy = space / 2 + 4;
     }
     Object.assign(view, { w, h, cx, cy, r });
 
