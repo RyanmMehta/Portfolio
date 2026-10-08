@@ -15,7 +15,12 @@
   <link rel="stylesheet" href="styles.css">
 
   <script type="importmap">
-    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js" } }
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      }
+    }
   </script>
 </head>
 <body>
@@ -38,6 +43,37 @@
   </main>
 
   <p class="hint" aria-hidden="true">Drag to explore</p>
+
+  <div id="pins" role="group" aria-label="Projects"></div>
+
+  <section id="place" aria-label="Project" hidden>
+    <canvas id="place-canvas" aria-hidden="true"></canvas>
+    <div class="place-toolbar">
+      <button type="button" id="place-back">Back to Earth ↗</button>
+    </div>
+    <article class="place-card">
+      <p class="place-meta"></p>
+      <h2 class="place-name"></h2>
+      <p class="place-blurb"></p>
+      <a class="place-link" target="_blank" rel="noopener noreferrer"></a>
+    </article>
+  </section>
+
+  <section id="universe" aria-label="Work" hidden>
+    <canvas id="universe-canvas" aria-hidden="true"></canvas>
+    <div class="cosmos-labels"></div>
+    <div class="cosmos-toolbar">
+      <button type="button" id="cosmos-up" hidden>← Galaxies</button>
+      <button type="button" id="cosmos-home">Back to Earth ↗</button>
+    </div>
+    <p class="cosmos-hint" aria-live="polite"></p>
+    <aside class="cosmos-panel" aria-live="polite" hidden>
+      <button type="button" class="cosmos-panel-close" aria-label="Close">×</button>
+      <p class="cosmos-panel-kicker"></p>
+      <h2 class="cosmos-panel-title"></h2>
+      <div class="cosmos-panel-body"></div>
+    </aside>
+  </section>
 
   <dialog id="contact" aria-label="Contact">
     <canvas id="impact" aria-hidden="true"></canvas>
