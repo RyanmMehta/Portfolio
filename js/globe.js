@@ -270,6 +270,13 @@ if (renderer) {
   // The name's width changes once the web font arrives.
   document.fonts?.ready.then(layout);
 
+  // Lets the contact transition shatter exactly what's on screen. Drawing
+  // right after a render reads the frame before WebGL discards it.
+  window.paintGlobe = (ctx, w, h) => {
+    renderer.render(scene, camera);
+    ctx.drawImage(canvas, 0, 0, w, h);
+  };
+
   /* ---------- Motion ---------- */
 
   // Spin angle that brings a longitude to the front of a SphereGeometry.

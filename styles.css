@@ -244,40 +244,145 @@ body {
   }
 }
 
-/* Contact: impact sequence and its accessible, clickable destination. */
-#contact { position: fixed; inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; color: var(--ink); background: transparent; overflow: auto; }
-#contact::backdrop { background: transparent; }
-#contact::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 70% 30%, #102238, #03050a 75%); opacity: 0; transition: opacity .35s; pointer-events: none; }
-#contact.has-impact::before, #contact.is-complete::before { opacity: .98; }
-#impact { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
-.contact-toolbar, .contact-bottom { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.5rem var(--gutter); }
-.contact-toolbar { background: linear-gradient(#03050ad9, transparent); }
-.contact-coordinate, .contact-eyebrow, #impact-status { font-size: .63rem; letter-spacing: .18em; color: #8da6c4; }
-#contact button { font: inherit; font-size: .75rem; color: var(--ink); border: 1px solid #8196b044; border-radius: 999px; padding: .7rem 1rem; background: #07101c; cursor: pointer; }
-#contact button:hover { border-color: #a7cfff; }
-#contact :focus-visible { outline: 2px solid #9fcaff; outline-offset: 5px; }
-.contact-content { position: relative; z-index: 1; width: min(820px, 100%); margin: 3vh auto; padding: 1rem 2rem; }
-.contact-eyebrow { margin: 0 0 1.5rem; }
-#contact-title { font-family: var(--serif); font-size: clamp(3.2rem, 7vw, 6rem); font-weight: 400; line-height: 1; margin: 0; }
-.contact-description { color: var(--ink-soft); font-size: .95rem; line-height: 1.7; max-width: 34rem; margin: 1.3rem 0 2rem; }
-.contact-list a { display: grid; grid-template-columns: 105px 1fr 24px; align-items: center; gap: 1rem; padding: 1.15rem 0; border-top: 1px solid #91aec02b; color: var(--ink); text-decoration: none; }
-.channel { font-size: .6rem; letter-spacing: .12em; color: #8da6c4; }
-.contact-value { font-size: clamp(1rem, 2.5vw, 1.8rem); font-weight: 300; overflow-wrap: anywhere; }
-.contact-arrow { color: #8da6c4; transition: transform .25s; }
-.contact-list a:hover { color: #a7cfff; }
-.contact-list a:hover .contact-arrow { transform: translate(3px, -3px); }
-.contact-content { opacity: 0; }
-#contact.is-complete .contact-content { opacity: 1; transition: opacity .7s; }
-#contact.is-complete #impact { opacity: 0; transition: opacity .9s; }
-body.contact-open { overflow: hidden; }
-body.contact-struck .hero, body.contact-struck #globe, body.contact-struck .hint { visibility: hidden; }
-@media (max-width: 600px) {
-  .contact-content { padding: 1rem 1.5rem; margin: 1vh auto; }
-  .contact-list a { grid-template-columns: 1fr 24px; gap: .5rem; padding: 1rem 0; }
-  .channel { grid-column: 1 / -1; }
-  .contact-coordinate { font-size: .5rem; }
-  .contact-toolbar, .contact-bottom { padding: 1rem 1.5rem; }
-  #impact-status { font-size: .5rem; letter-spacing: .08em; }
+/* ---------- Contact: asteroid strike, shatter, rebuild ---------- */
+
+#contact {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  color: var(--ink);
+  background: transparent;
 }
-@media (prefers-reduced-motion: reduce) { #contact *, #contact::before { transition: none !important; } }
-#contact-title:focus { outline: none; }
+
+#contact::backdrop {
+  background: transparent;
+}
+
+/* Deep space behind the shards, shown from the moment of impact. */
+#contact::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 47%, #0d1a2e 0%, #060a14 55%, #02040a 100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#contact.is-struck::before {
+  opacity: 0.94;
+}
+
+#impact {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#contact.is-built #impact {
+  opacity: 0;
+  transition: opacity 0.8s ease 0.1s;
+}
+
+.contact-toolbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 3;
+  padding: 1.5rem var(--gutter);
+}
+
+#close-contact {
+  padding: 0.7rem 1.1rem;
+  border: 1px solid rgba(129, 150, 176, 0.3);
+  border-radius: 999px;
+  background: rgba(7, 16, 28, 0.7);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.3s ease;
+}
+
+#close-contact:hover {
+  border-color: #a7cfff;
+}
+
+#contact :focus-visible {
+  outline: 2px solid #9fcaff;
+  outline-offset: 6px;
+}
+
+.contact-icons {
+  --icon: clamp(76px, 10vw, 124px);
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--icon) * 0.4);
+  pointer-events: none;
+}
+
+.app-icon {
+  display: block;
+  border-radius: 23%;
+  opacity: 0;
+  pointer-events: auto;
+}
+
+.app-icon svg {
+  display: block;
+  width: var(--icon);
+  height: var(--icon);
+  transition: transform 0.4s var(--ease-out), filter 0.4s ease;
+}
+
+#contact.is-built .app-icon {
+  opacity: 1;
+  transition: opacity 0.45s ease;
+}
+
+#contact.is-built .app-icon svg {
+  filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.45));
+}
+
+#contact.is-built .app-icon:hover svg,
+#contact.is-built .app-icon:focus-visible svg {
+  transform: translateY(-6px) scale(1.04);
+  filter: drop-shadow(0 22px 44px rgba(70, 140, 255, 0.35));
+}
+
+body.contact-open {
+  overflow: hidden;
+}
+
+body.contact-struck .hero,
+body.contact-struck #globe,
+body.contact-struck .hint {
+  visibility: hidden;
+}
+
+@media (max-width: 600px) {
+  .contact-toolbar {
+    padding: 1rem 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #contact *,
+  #contact::before {
+    transition: none !important;
+  }
+}
