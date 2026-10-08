@@ -1,0 +1,245 @@
+:root {
+  --bg: #03050a;
+  --ink: #eef1f6;
+  --ink-soft: rgba(238, 241, 246, 0.64);
+  --ink-faint: rgba(238, 241, 246, 0.4);
+  --serif: "Instrument Serif", "Iowan Old Style", "Times New Roman", serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gutter: clamp(1.5rem, 7vw, 7rem);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Updated from js/globe.js so overlays can line up with the globe. */
+  --globe-x: 69vw;
+  --hint-top: 92vh;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background:
+    radial-gradient(ellipse 50% 60% at var(--globe-x) 50%, rgba(40, 80, 150, 0.09), transparent 70%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- Sky and globe ---------- */
+
+#stars,
+#globe {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+}
+
+#stars {
+  transition: opacity 2.4s ease;
+}
+
+#globe {
+  transition: opacity 2.2s var(--ease-out);
+  /* Vertical swipes stay with the page; horizontal drags turn the globe. */
+  touch-action: pan-y;
+}
+
+#stars.is-ready,
+#globe.is-ready {
+  opacity: 1;
+}
+
+#globe.is-over-globe {
+  cursor: grab;
+}
+
+#globe.is-dragging {
+  cursor: grabbing;
+}
+
+/* ---------- Intro ---------- */
+
+.hero {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: var(--gutter);
+  /* Let drags fall through to the globe everywhere except the text itself. */
+  pointer-events: none;
+}
+
+.intro {
+  width: fit-content;
+  max-width: 31rem;
+  pointer-events: auto;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(3.4rem, 7.4vw, 7.25rem);
+  line-height: 0.92;
+  letter-spacing: -0.015em;
+}
+
+.lede {
+  margin: 1.75rem 0 0;
+  max-width: 25rem;
+  font-size: clamp(1rem, 1.15vw, 1.125rem);
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+.links {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2.75rem;
+}
+
+.links a {
+  position: relative;
+  padding-block: 0.4rem;
+  color: var(--ink-faint);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.4s ease;
+}
+
+.links a::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s var(--ease-out);
+}
+
+.links a:hover,
+.links a:focus-visible {
+  color: var(--ink);
+}
+
+.links a:hover::after,
+.links a:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.links a:focus-visible {
+  outline: 1px solid var(--ink-faint);
+  outline-offset: 6px;
+}
+
+/* Text settles in while the globe makes its opening turn. */
+.intro > * {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: rise 1.6s var(--ease-out) forwards;
+}
+
+.name {
+  animation-delay: 0.35s;
+}
+
+.lede {
+  animation-delay: 0.6s;
+}
+
+.links {
+  animation-delay: 0.85s;
+}
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hint {
+  position: fixed;
+  z-index: 1;
+  top: var(--hint-top);
+  left: var(--globe-x);
+  margin: 0;
+  transform: translateX(-50%);
+  color: var(--ink-faint);
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.hint.is-visible {
+  opacity: 1;
+}
+
+/* ---------- Small screens: globe on top, text below ---------- */
+
+@media (max-width: 899px) {
+  .hero {
+    align-items: flex-end;
+    padding-bottom: max(3.5rem, 9svh);
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(to top, rgba(3, 5, 10, 0.92), rgba(3, 5, 10, 0.55) 38%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .name {
+    font-size: clamp(3rem, 15vw, 4.5rem);
+  }
+
+  .links {
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .hint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro > * {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  #stars,
+  #globe,
+  .hint {
+    transition-duration: 0.01s;
+  }
+}
