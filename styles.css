@@ -243,3 +243,41 @@ body {
     transition-duration: 0.01s;
   }
 }
+
+/* Contact: impact sequence and its accessible, clickable destination. */
+#contact { position: fixed; inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; color: var(--ink); background: transparent; overflow: auto; }
+#contact::backdrop { background: transparent; }
+#contact::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 70% 30%, #102238, #03050a 75%); opacity: 0; transition: opacity .35s; pointer-events: none; }
+#contact.has-impact::before, #contact.is-complete::before { opacity: .98; }
+#impact { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.contact-toolbar, .contact-bottom { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.5rem var(--gutter); }
+.contact-toolbar { background: linear-gradient(#03050ad9, transparent); }
+.contact-coordinate, .contact-eyebrow, #impact-status { font-size: .63rem; letter-spacing: .18em; color: #8da6c4; }
+#contact button { font: inherit; font-size: .75rem; color: var(--ink); border: 1px solid #8196b044; border-radius: 999px; padding: .7rem 1rem; background: #07101c; cursor: pointer; }
+#contact button:hover { border-color: #a7cfff; }
+#contact :focus-visible { outline: 2px solid #9fcaff; outline-offset: 5px; }
+.contact-content { position: relative; z-index: 1; width: min(820px, 100%); margin: 3vh auto; padding: 1rem 2rem; }
+.contact-eyebrow { margin: 0 0 1.5rem; }
+#contact-title { font-family: var(--serif); font-size: clamp(3.2rem, 7vw, 6rem); font-weight: 400; line-height: 1; margin: 0; }
+.contact-description { color: var(--ink-soft); font-size: .95rem; line-height: 1.7; max-width: 34rem; margin: 1.3rem 0 2rem; }
+.contact-list a { display: grid; grid-template-columns: 105px 1fr 24px; align-items: center; gap: 1rem; padding: 1.15rem 0; border-top: 1px solid #91aec02b; color: var(--ink); text-decoration: none; }
+.channel { font-size: .6rem; letter-spacing: .12em; color: #8da6c4; }
+.contact-value { font-size: clamp(1rem, 2.5vw, 1.8rem); font-weight: 300; overflow-wrap: anywhere; }
+.contact-arrow { color: #8da6c4; transition: transform .25s; }
+.contact-list a:hover { color: #a7cfff; }
+.contact-list a:hover .contact-arrow { transform: translate(3px, -3px); }
+.contact-content { opacity: 0; }
+#contact.is-complete .contact-content { opacity: 1; transition: opacity .7s; }
+#contact.is-complete #impact { opacity: 0; transition: opacity .9s; }
+body.contact-open { overflow: hidden; }
+body.contact-struck .hero, body.contact-struck #globe, body.contact-struck .hint { visibility: hidden; }
+@media (max-width: 600px) {
+  .contact-content { padding: 1rem 1.5rem; margin: 1vh auto; }
+  .contact-list a { grid-template-columns: 1fr 24px; gap: .5rem; padding: 1rem 0; }
+  .channel { grid-column: 1 / -1; }
+  .contact-coordinate { font-size: .5rem; }
+  .contact-toolbar, .contact-bottom { padding: 1rem 1.5rem; }
+  #impact-status { font-size: .5rem; letter-spacing: .08em; }
+}
+@media (prefers-reduced-motion: reduce) { #contact *, #contact::before { transition: none !important; } }
+#contact-title:focus { outline: none; }
