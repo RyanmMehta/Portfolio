@@ -3,6 +3,7 @@
 // focus: a field of galaxies, one for each thing Ryan loves doing.
 
 import * as THREE from 'three';
+import { whenIdle } from './perf.js';
 
 // Each galaxy is a cloud of stars in the shape of one activity, and opens a
 // photo wheel. Add photos like { src: 'assets/about/guitar/1.jpg', alt: '…' };
@@ -479,6 +480,39 @@ function sampleMask(draw) {
 
 // Turns a drawn shape into star positions: dense inside, brightest along the
 // outline so the shape reads clearly, plus a faint halo around it.
+// Shapes are built once and reused on every visit; prepare() builds them
+// ahead of time while the browser is idle, so opening About doesn't stall.
+const shapeCache = new Map();
+const shapeCount = () => (Math.min(innerWidth, innerHeight) < 700 ? 9000 : 20000);
+
+function cachedShape(g) {
+  const n = shapeCount();
+  const key = `${g.id}:${n}`;
+  if (!shapeCache.has(key)) {
+    const raw = shapeStars(g.id, g.colors, n, seeded(g.id.length * 7919 + n));
+    shapeCache.set(key, {
+      pos: new Float32Array(raw.pos),
+      col: new Float32Array(raw.col),
+      size: new Float32Array(raw.size),
+      phase: new Float32Array(raw.phase),
+      dir: new Float32Array(raw.dir),
+      part: new Float32Array(raw.part),
+    });
+  }
+  return shapeCache.get(key);
+}
+
+export function prepare() {
+  const pending = GALAXIES.slice();
+  const next = () => {
+    const g = pending.shift();
+    if (!g) return;
+    cachedShape(g);
+    whenIdle(next);
+  };
+  whenIdle(next);
+}
+
 function shapeStars(id, colors, n, rand) {
   const main = sampleMask(DRAW[id]);
   const count = main.inside.length / 3;
@@ -657,14 +691,14 @@ function buildGalaxy(g, index, ctx) {
   turn.scale.setScalar(s);
   outer.add(turn);
 
-  const stars = shapeStars(g.id, g.colors, small ? 9000 : 20000, rand);
+  const stars = cachedShape(g);
   const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(stars.pos, 3));
-  geo.setAttribute('aColor', new THREE.Float32BufferAttribute(stars.col, 3));
-  geo.setAttribute('aSize', new THREE.Float32BufferAttribute(stars.size, 1));
-  geo.setAttribute('aPhase', new THREE.Float32BufferAttribute(stars.phase, 1));
-  geo.setAttribute('aDir', new THREE.Float32BufferAttribute(stars.dir, 2));
-  geo.setAttribute('aPart', new THREE.Float32BufferAttribute(stars.part, 1));
+  geo.setAttribute('position', new THREE.BufferAttribute(stars.pos, 3));
+  geo.setAttribute('aColor', new THREE.BufferAttribute(stars.col, 3));
+  geo.setAttribute('aSize', new THREE.BufferAttribute(stars.size, 1));
+  geo.setAttribute('aPhase', new THREE.BufferAttribute(stars.phase, 1));
+  geo.setAttribute('aDir', new THREE.BufferAttribute(stars.dir, 2));
+  geo.setAttribute('aPart', new THREE.BufferAttribute(stars.part, 1));
   const material = new THREE.ShaderMaterial({
     uniforms: {
       uTime: { value: 0 },

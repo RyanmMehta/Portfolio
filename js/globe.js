@@ -7,6 +7,7 @@
 
 import * as THREE from 'three';
 import { PROJECTS } from './projects.js';
+import { whenIdle } from './perf.js';
 
 // NASA Blue Marble / Black Marble imagery, as packaged with three-globe.
 const TEXTURES = 'https://cdn.jsdelivr.net/npm/three-globe@2.34.0/example/img/';
@@ -353,8 +354,9 @@ if (renderer) {
 
   function frame(now) {
     step(now);
-    // While a project's world is open, the globe sits underneath it unseen.
-    if (travel.phase !== 'inside' && space.phase !== 'away' && !sky.hidden) renderer.render(scene, camera);
+    // Skip drawing while another view covers the globe completely.
+    const covered = travel.phase === 'inside' || space.phase === 'away' || sky.hidden || document.body.classList.contains('contact-struck');
+    if (!covered) renderer.render(scene, camera);
     requestAnimationFrame(frame);
   }
 
@@ -545,7 +547,8 @@ if (renderer) {
       pin.halo.getWorldPosition(tmp).project(camera);
       pin.x = ((tmp.x + 1) / 2) * view.w;
       pin.y = ((1 - tmp.y) / 2) * view.h;
-      pin.label.style.transform = `translate(${pin.x.toFixed(1)}px, ${pin.y.toFixed(1)}px) translate(-50%, calc(-100% - 22px))`;
+      // Only move labels that can be seen; style writes every frame add up.
+      if (vis > 0.01) pin.label.style.transform = `translate(${pin.x.toFixed(1)}px, ${pin.y.toFixed(1)}px) translate(-50%, calc(-100% - 22px))`;
       pin.label.classList.toggle('is-focused', f > 0.5 && !travel.active);
       pin.label.classList.toggle('is-visible', vis > 0.45 && !travel.active);
       pin.label.tabIndex = vis > 0.4 && !travel.active ? 0 : -1;
@@ -797,11 +800,12 @@ if (renderer) {
     load(`${TEXTURES}earth-night.jpg`, true),
     load(`${TEXTURES}earth-water.png`, false),
   ])
-    .then(([day, night, water]) => {
+    .then(async ([day, night, water]) => {
       earthMaterial.uniforms.uDay.value = day;
       earthMaterial.uniforms.uNight.value = night;
       earthMaterial.uniforms.uWater.value = water;
-      renderer.compile(scene, camera);
+      // Compile shaders without blocking the page where the browser allows it.
+      await renderer.compileAsync(scene, camera);
 
       ready = true;
       startTime = last = performance.now();
@@ -811,12 +815,21 @@ if (renderer) {
       setTimeout(() => {
         if (!hintDismissed) hint?.classList.add('is-visible');
       }, 2800);
-      setTimeout(() => {
-        loadPlaces().catch(() => {});
-        loadWork().catch(() => {});
-        loadAbout().catch(() => {});
-      }, 4000);
-      loadClouds();
+      // Once the opening turn has settled, load the cloud layer (a large
+      // image) and quietly fetch the other views, so none of it competes
+      // with the opening animation.
+      setTimeout(
+        () =>
+          whenIdle(() => {
+            loadClouds();
+            loadPlaces().catch(() => {});
+            loadWork().catch(() => {});
+            loadAbout()
+              .then((m) => whenIdle(() => m.prepare?.()))
+              .catch(() => {});
+          }),
+        4500,
+      );
     })
     .catch((err) => console.warn('Globe textures failed to load.', err));
 }

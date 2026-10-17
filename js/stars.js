@@ -51,37 +51,60 @@ function build() {
   }
 }
 
-function draw(time) {
-  const t = time / 1000;
-  ctx.clearRect(0, 0, width, height);
-  for (const s of stars) {
-    const flicker = s.speed && !reduceMotion ? 0.6 + 0.4 * Math.sin(t * s.speed + s.phase) : 1;
-    const alpha = s.a * flicker;
-    if (s.bright) {
-      ctx.fillStyle = `rgba(${s.tint}, ${alpha * 0.08})`;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.fillStyle = `rgba(${s.tint}, ${alpha})`;
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    ctx.fill();
+// Stars that don't twinkle are painted once onto their own layer; each frame
+// only copies that layer and redraws the few that twinkle.
+let still = null;
+let twinklers = [];
+
+function paintStar(g, s, alpha) {
+  if (s.bright) {
+    g.fillStyle = `rgba(${s.tint}, ${alpha * 0.08})`;
+    g.beginPath();
+    g.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
+    g.fill();
   }
+  g.fillStyle = `rgba(${s.tint}, ${alpha})`;
+  g.beginPath();
+  g.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+  g.fill();
 }
 
+function prepareLayers() {
+  const visible = stars.filter((s) => s.y <= height + 4);
+  still = document.createElement('canvas');
+  still.width = canvas.width;
+  still.height = canvas.height;
+  const g = still.getContext('2d');
+  g.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
+  for (const s of visible) if (!s.speed || reduceMotion) paintStar(g, s, s.a);
+  twinklers = reduceMotion ? [] : visible.filter((s) => s.speed);
+}
+
+function draw(time) {
+  // A hidden or zero-size window has nothing to draw yet.
+  if (!width || !height || !still?.width || !still?.height) return;
+  const t = time / 1000;
+  ctx.clearRect(0, 0, width, height);
+  ctx.drawImage(still, 0, 0, width, height);
+  for (const s of twinklers) paintStar(ctx, s, s.a * (0.6 + 0.4 * Math.sin(t * s.speed + s.phase)));
+}
+
+// Nothing is drawn while another view covers the page.
+const COVERS = ['place-open', 'work-open', 'sky-open', 'contact-struck'];
 function loop(time) {
-  draw(time);
+  if (!COVERS.some((c) => document.body.classList.contains(c))) draw(time);
   requestAnimationFrame(loop);
 }
 
 build();
+prepareLayers();
 window.addEventListener('resize', () => {
   build();
-  if (reduceMotion) draw(0);
+  prepareLayers();
+  draw(performance.now());
 });
 
-if (reduceMotion) draw(0);
-else requestAnimationFrame(loop);
+draw(0);
+if (!reduceMotion) requestAnimationFrame(loop);
 
 canvas.classList.add('is-ready');
